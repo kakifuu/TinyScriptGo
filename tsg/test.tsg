@@ -1,0 +1,5 @@
+func foo(a, b) {
+    print(a + b)
+}
+
+foo(-100.00, 100)
