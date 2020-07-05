@@ -6,8 +6,8 @@ import (
 )
 
 type Token struct {
-	_type  int
-	_value string
+	typ int
+	val string
 }
 
 // Token Type
@@ -28,16 +28,16 @@ var (
 )
 
 func (token *Token) GetType() int {
-	return token._type
+	return token.typ
 }
 
 func (token *Token) IsVariable() bool {
-	return token._type == VARIABLE
+	return token.typ == VARIABLE
 }
 
 func (token *Token) IsScalar() bool {
-	return token._type == STRING || token._type == INTEGER ||
-		token._type == FLOAT || token._type == BOOLEAN
+	return token.typ == STRING || token.typ == INTEGER ||
+		token.typ == FLOAT || token.typ == BOOLEAN
 }
 
 func (token *Token) IsValue() bool {
@@ -45,21 +45,22 @@ func (token *Token) IsValue() bool {
 }
 
 func (token *Token) IsOperator() bool {
-	return token._type == OPERATOR
+	return token.typ == OPERATOR
 }
 
 func (token *Token) IsNumber() bool {
-	return token._type == INTEGER || token._type == FLOAT
+	return token.typ == INTEGER || token.typ == FLOAT
 }
 
 func (token *Token) Equals(t *Token) bool {
-	return token._type == t._type && token._value == t._value
+	return token.typ == t.typ && token.val == t.val
 }
 
-func MakeVarOrKeyword(it *util.Iterator) *Token {
+func MakeVarOrKeyword(it util.Iterator) *Token {
 	value := ""
 	for it.HasNext() {
-		p := it.Peek()
+		element, _ := it.Peek()
+		p := element.(string)
 		if util.IsLiteral(p) {
 			value += p
 		} else {
@@ -78,11 +79,12 @@ func MakeVarOrKeyword(it *util.Iterator) *Token {
 	return &Token{VARIABLE, value}
 }
 
-func MakeString(it *util.Iterator) *Token {
+func MakeString(it util.Iterator) *Token {
 	value := ""
 	state := 0
 	for it.HasNext() {
-		s := it.Next()
+		element, _ := it.Next()
+		s := element.(string)
 		switch state {
 		case 0:
 			if s == "\"" {
@@ -109,11 +111,12 @@ func MakeString(it *util.Iterator) *Token {
 	panic(ErrUnexpected)
 }
 
-func MakeNumber(it *util.Iterator) *Token {
+func MakeNumber(it util.Iterator) *Token {
 	value := ""
 	state := 0
 	for it.HasNext() {
-		p := it.Peek()
+		element, _ := it.Peek()
+		p := element.(string)
 
 		switch state {
 		case 0:
@@ -180,14 +183,26 @@ func MakeNumber(it *util.Iterator) *Token {
 		value += p
 	}
 
+	switch state {
+	case 1:
+		return &Token{INTEGER, "0"}
+	case 2:
+		return &Token{INTEGER, value}
+	case 4:
+		fallthrough
+	case 20:
+		return &Token{FLOAT, value}
+	}
+
 	panic(ErrUnexpected)
 }
 
-func MakeOperator(it *util.Iterator) *Token {
+func MakeOperator(it util.Iterator) *Token {
 	state := 0
 
 	for it.HasNext() {
-		s := it.Next()
+		element, _ := it.Next()
+		s := element.(string)
 
 		switch state {
 		case 0:

@@ -29,11 +29,11 @@ digraph G {
 
 
 
-  1->end1[label="any"]
-  2->end2[label="any"]
+  1->end1[label="any/EOF"]
+  2->end2[label="any/EOF"]
   4->error[label="."]
-  4->end3[label="any"]
-  20->end4[label="any"]
+  4->end3[label="any/EOF"]
+  20->end4[label="any/EOF"]
   20->error2[label="."]
 
 }

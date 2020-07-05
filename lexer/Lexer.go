@@ -11,11 +11,12 @@ var (
 	ErrCommentsNotMatch = errors.New("Comments not match ")
 )
 
-func Analyse(it *util.Iterator) []*Token {
+func Analyse(it util.Iterator) []*Token {
 	var tokens []*Token
 
 	for it.HasNext() {
-		s := it.Next()
+		element, _ := it.Next()
+		s := element.(string)
 		if s == util.END_SYM {
 			break
 		}
@@ -23,12 +24,13 @@ func Analyse(it *util.Iterator) []*Token {
 			continue
 		}
 
-		p := it.Peek()
+		p, _ := it.Peek()
 
 		if s == "/" {
 			if p == "/" {
 				for it.HasNext() {
-					if s = it.Next(); s == "\n" {
+					element, _ := it.Next()
+					if s = element.(string); s == "\n" {
 						break
 					}
 				}
@@ -37,8 +39,10 @@ func Analyse(it *util.Iterator) []*Token {
 				it.Next()
 				valid := false
 				for it.HasNext() {
-					tmp := it.Next()
-					if tmp == "*" && it.Peek() == "/" {
+					next, _ := it.Next()
+					tmp := next.(string)
+					p, _ := it.Peek()
+					if tmp == "*" && p.(string) == "/" {
 						it.Next()
 						valid = true
 						break
@@ -74,7 +78,7 @@ func Analyse(it *util.Iterator) []*Token {
 			continue
 		}
 
-		if (s == "+" || s == "-" || s == ".") && util.IsNumber(p) {
+		if (s == "+" || s == "-" || s == ".") && util.IsNumber(p.(string)) {
 			var lastToken *Token
 			if len(tokens) > 0 {
 				lastToken = tokens[len(tokens)-1]
@@ -103,5 +107,5 @@ func AnalyseFromFile(filename string) []*Token {
 	if err != nil {
 		panic(err)
 	}
-	return Analyse(util.NewIterator(bufio.NewReader(file)))
+	return Analyse(util.NewRuneIterator(bufio.NewReader(file)))
 }

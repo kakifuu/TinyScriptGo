@@ -20,7 +20,7 @@ func compareSlices(s1, s2 []string) bool {
 
 func TestIterator_Next(t *testing.T) {
 	reader := bufio.NewReader(strings.NewReader("ABCDEFGHIJKL"))
-	it := NewIterator(reader)
+	it := NewRuneIterator(reader)
 	wants := []string{
 		"A", "B", "C",
 		"D", "E", "F",
@@ -29,7 +29,8 @@ func TestIterator_Next(t *testing.T) {
 		string(0),
 	}
 	for _, want := range wants {
-		got := it.Next()
+		element, _ := it.Next()
+		got := element.(string)
 		if got != want {
 			t.Errorf("got %v, want %v", got, want)
 		}
@@ -38,10 +39,11 @@ func TestIterator_Next(t *testing.T) {
 
 func TestIterator_Peek(t *testing.T) {
 	reader := bufio.NewReader(strings.NewReader("ABCDE"))
-	it := NewIterator(reader)
+	it := NewRuneIterator(reader)
 	wants := []string{"A", "A", "A", "A", "A"}
 	for _, want := range wants {
-		got := it.Peek()
+		element, _ := it.Peek()
+		got := element.(string)
 		if got != want {
 			t.Errorf("got %v, want %v", got, want)
 		}
@@ -49,7 +51,8 @@ func TestIterator_Peek(t *testing.T) {
 	it.Next()
 	wants = []string{"B", "B", "B", "B", "B"}
 	for _, want := range wants {
-		got := it.Peek()
+		element, _ := it.Peek()
+		got := element.(string)
 		if got != want {
 			t.Errorf("got %v, want %v", got, want)
 		}
@@ -58,7 +61,7 @@ func TestIterator_Peek(t *testing.T) {
 
 func TestIterator_PeekN(t *testing.T) {
 	reader := bufio.NewReader(strings.NewReader("ABCDE"))
-	it := NewIterator(reader)
+	it := NewRuneIterator(reader)
 	tests := []struct {
 		n    int
 		want []string
@@ -68,7 +71,8 @@ func TestIterator_PeekN(t *testing.T) {
 		{3, []string{"A", "B", "C"}},
 	}
 	for _, test := range tests {
-		got := it.PeekN(test.n)
+		elements, _ := it.PeekN(test.n)
+		got := MapToString(elements)
 		if !compareSlices(got, test.want) {
 			t.Errorf("got %v, want %v", got, test.want)
 		}
@@ -82,13 +86,13 @@ func TestIterator_PeekN(t *testing.T) {
 				t.Errorf("got %v, want %v", err, ErrOverPeek)
 			}
 		}()
-		it.PeekN(11)
+		_, _ = it.PeekN(11)
 	}()
 }
 
 func TestIterator_PutBack(t *testing.T) {
 	reader := bufio.NewReader(strings.NewReader("ABC"))
-	it := NewIterator(reader)
+	it := NewRuneIterator(reader)
 	func() {
 		defer func() {
 			r := recover()
@@ -107,7 +111,8 @@ func TestIterator_PutBack(t *testing.T) {
 			func() string {
 				it.Next()
 				it.PutBack(1)
-				return it.Next()
+				element, _ := it.Next()
+				return element.(string)
 			},
 			"A",
 		},
@@ -116,7 +121,8 @@ func TestIterator_PutBack(t *testing.T) {
 				it.Next()
 				it.Next()
 				it.PutBack(2)
-				return it.Next()
+				element, _ := it.Next()
+				return element.(string)
 			},
 			"B",
 		},
@@ -131,7 +137,7 @@ func TestIterator_PutBack(t *testing.T) {
 
 func TestIterator_HasNext(t *testing.T) {
 	reader := bufio.NewReader(strings.NewReader("ABC"))
-	it := NewIterator(reader)
+	it := NewRuneIterator(reader)
 	tests := []struct {
 		preAction func()
 		want      bool

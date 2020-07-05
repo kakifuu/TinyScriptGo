@@ -11,12 +11,12 @@ import (
 func TestMakeVarOrKeyword(t *testing.T) {
 	reader1 := bufio.NewReader(strings.NewReader("if abc"))
 	reader2 := bufio.NewReader(strings.NewReader("true abc"))
-	it1 := util.NewIterator(reader1)
-	it2 := util.NewIterator(reader2)
+	it1 := util.NewRuneIterator(reader1)
+	it2 := util.NewRuneIterator(reader2)
 
 	tests := []struct {
 		action func()
-		it     *util.Iterator
+		it     util.Iterator
 		want   *Token
 	}{
 		{nil, it1, &Token{KEYWORD, "if"}},
@@ -38,7 +38,7 @@ func TestMakeVarOrKeyword(t *testing.T) {
 func TestMakeString(t *testing.T) {
 	tests := []string{"'123'", "\"123\""}
 	for _, test := range tests {
-		it := util.NewIterator(bufio.NewReader(strings.NewReader(test)))
+		it := util.NewRuneIterator(bufio.NewReader(strings.NewReader(test)))
 		got := MakeString(it)
 		want := &Token{STRING, test}
 		if !got.Equals(want) {
@@ -59,7 +59,7 @@ func TestMakeNumber(t *testing.T) {
 		"-1000.123123*123123",
 	}
 	for _, test := range tests {
-		it := util.NewIterator(bufio.NewReader(strings.NewReader(test)))
+		it := util.NewRuneIterator(bufio.NewReader(strings.NewReader(test)))
 		got := MakeNumber(it)
 		wantVal := ptn.Split(test, -1)[0]
 		tokenType := INTEGER
@@ -128,7 +128,7 @@ func TestMakeOperator(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			it := util.NewIterator(bufio.NewReader(strings.NewReader(test.text)))
+			it := util.NewRuneIterator(bufio.NewReader(strings.NewReader(test.text)))
 			got := MakeOperator(it)
 			want := &Token{OPERATOR, test.wantVal}
 			if !got.Equals(want) {

@@ -33,3 +33,11 @@ func ErrWithArgs(format string, args ...string) error {
 	errMsg := fmt.Sprintf(format, args)
 	return errors.New(errMsg)
 }
+
+func MapToString(elements []interface{}) []string {
+	var results []string
+	for _, element := range elements {
+		results = append(results, element.(string))
+	}
+	return results
+}

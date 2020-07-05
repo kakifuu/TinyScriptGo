@@ -9,7 +9,7 @@ import (
 )
 
 func TestAnalyse(t *testing.T) {
-	tokens := Analyse(util.NewIterator(bufio.NewReader(strings.NewReader("(a+b)^100.12==+100-20"))))
+	tokens := Analyse(util.NewRuneIterator(bufio.NewReader(strings.NewReader("(a+b)^100.12==+100-20"))))
 	tests := []struct {
 		index int
 		want  *Token
@@ -67,9 +67,11 @@ func TestAnalyseFromFile(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		got := tokens[test.index]
-		if !got.Equals(test.want) {
-			t.Errorf("got %v, want %v", got, test.want)
-		}
+		t.Run(fmt.Sprintf("test%v", test.index), func(t *testing.T) {
+			got := tokens[test.index]
+			if !got.Equals(test.want) {
+				t.Errorf("got %v, want %v", got, test.want)
+			}
+		})
 	}
 }
